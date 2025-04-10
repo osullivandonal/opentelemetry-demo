@@ -58,22 +58,23 @@ keeping it up to date for you.
 
 |                           |                |                                  |
 |---------------------------|----------------|----------------------------------|
-| [AlibabaCloud LogService] | [Elastic]      | [OpenSearch]                     |
-| [AppDynamics]             | [Google Cloud] | [Oracle]                         |
-| [Aspecto]                 | [Grafana Labs] | [Sentry]                         |
-| [Axiom]                   | [Guance]       | [ServiceNow Cloud Observability] |
-| [Axoflow]                 | [Honeycomb.io] | [Splunk]                         |
-| [Azure Data Explorer]     | [Instana]      | [Sumo Logic]                     |
-| [Coralogix]               | [Kloudfuse]    | [TelemetryHub]                   |
-| [Dash0]                   | [Liatrio]      | [Teletrace]                      |
-| [Datadog]                 | [Logz.io]      | [Tracetest]                      |
-| [Dynatrace]               | [New Relic]    | [Uptrace]                        |
+| [AlibabaCloud LogService] | [Google Cloud] |  [Sentry]                        |
+| [AppDynamics]             | [Grafana Labs] |  [ServiceNow Cloud Observability]|
+| [Aspecto]                 | [Guance]       |  [SigNoz]                        |
+| [Axiom]                   | [Honeycomb.io] |  [Splunk]                        |
+| [Axoflow]                 | [Instana]      |  [Sumo Logic]                    |
+| [Azure Data Explorer]     | [Kloudfuse]    |  [TelemetryHub]                  |
+| [Coralogix]               | [Liatrio]      |  [Teletrace]                     |
+| [Dash0]                   | [Logz.io]      |  [Tracetest]                     |
+| [Datadog]                 | [New Relic]    |  [Uptrace]                       |
+| [Dynatrace]               | [OpenSearch]   |                                  |
+| [Elastic]                 | [Oracle]       |                                  |
 
 ## Contributing
 
 To get involved with the project see our [CONTRIBUTING](CONTRIBUTING.md)
 documentation. Our [SIG Calls](CONTRIBUTING.md#join-a-sig-call) are every other
-Monday at 8:30 AM PST and anyone is welcome.
+Wednesday at 8:30 AM PST and anyone is welcome.
 
 ## Project leadership
 
@@ -132,6 +133,7 @@ Emeritus:
 [Oracle]: https://github.com/oracle-quickstart/oci-o11y-solutions/blob/main/knowledge-content/opentelemetry-demo
 [Sentry]: https://github.com/getsentry/opentelemetry-demo
 [ServiceNow Cloud Observability]: https://docs.lightstep.com/otel/quick-start-operator#send-data-from-the-opentelemetry-demo
+[SigNoz]: https://signoz.io/blog/opentelemetry-demo/
 [Splunk]: https://github.com/signalfx/opentelemetry-demo
 [Sumo Logic]: https://www.sumologic.com/blog/common-opentelemetry-demo-application/
 [TelemetryHub]: https://github.com/TelemetryHub/opentelemetry-demo/tree/telemetryhub-backend

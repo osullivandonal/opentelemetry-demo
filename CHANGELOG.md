@@ -7,10 +7,27 @@ the release.
 
 ## Unreleased
 
+## 2.0.2
+
+* [frontend] Update OpenTelemetry Browser SDK initialization
+  ([#2092](https://github.com/open-telemetry/opentelemetry-demo/pull/2092))
+* [quote] Updated open-telemetry/exporter-otlp to 1.2.1 which includes the
+  fix for `IS_REMOTE` flag feature
+  ([#2112](https://github.com/open-telemetry/opentelemetry-demo/pull/2112))
+* [load-generator] Change OpenFeature Evaluation to Remote Evaluation Protocol,
+  based on [this issue in OpenFeature/python-sdk-contrib](https://github.com/open-feature/python-sdk-contrib/issues/198)
+  ([#2114](https://github.com/open-telemetry/opentelemetry-demo/pull/2114))
+* [flagd-ui] increase memory to 100MB
+  ([#2120](https://github.com/open-telemetry/opentelemetry-demo/pull/2120))
+
+## 2.0.1
+
 * [chore] Use Linkspector to check links
   ([#2070](https://github.com/open-telemetry/opentelemetry-demo/pull/2070))
 * [frontend] Cypress tests base image updated to 14.0.3
   ([#2072](https://github.com/open-telemetry/opentelemetry-demo/pull/2072))
+* [grafana] Update dashboards with service map
+  ([#2085](https://github.com/open-telemetry/opentelemetry-demo/pull/2085))
 
 ## 2.0.0
 
