@@ -56,7 +56,7 @@ In the installed configuration, browser-based load generation is disabled by def
 1. Set LOCUST_BROWSER_TRAFFIC_ENABLED to "true" in kubernetes/elastic-helm/demo.yml.
 2. Modify the OTLP HTTP receiver in the DaemonSet OpenTelemetry Collector values file (used in the [EDOT Quick Start Guide](https://elastic.github.io/opentelemetry/quickstart/)) to include CORS support:
    ```yaml
-   eceivers:
+   receivers:
      otlp:
        protocols:
          http:
