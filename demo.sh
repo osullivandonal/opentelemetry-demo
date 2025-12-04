@@ -15,7 +15,7 @@ DEMO_HELM_VERSION='0.38.3'
 
 KUBE_STACK_RELEASE="opentelemetry-kube-stack"
 KUBE_STACK_CHART="open-telemetry/opentelemetry-kube-stack"
-KUBE_STACK_VERSION='0.10.5'
+KUBE_STACK_VERSION='0.12.4'
 KUBE_STACK_VALUES_URL_CLOUD='https://raw.githubusercontent.com/elastic/elastic-agent/refs/tags/v'$ELASTIC_STACK_VERSION'/deploy/helm/edot-collector/kube-stack/values.yaml'
 KUBE_STACK_VALUES_URL_SERVERLESS='https://raw.githubusercontent.com/elastic/elastic-agent/refs/tags/v'$ELASTIC_STACK_VERSION'/deploy/helm/edot-collector/kube-stack/managed_otlp/values.yaml'
 SECRET_NAME='elastic-secret-otel'
@@ -177,6 +177,7 @@ install_kube_stack() {
   helm upgrade --install "$KUBE_STACK_RELEASE" "$KUBE_STACK_CHART" \
     --namespace "$NAMESPACE" \
     --values "$VALUES_URL" \
+    --values complete-fix.yml \
     --version "$KUBE_STACK_VERSION"
 }
 

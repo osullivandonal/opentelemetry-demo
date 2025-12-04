@@ -1,0 +1,8 @@
+collectors:
+  gateway:
+    config:
+      service:
+        pipelines:
+          metrics/aggregated-otel-metrics:
+            processors: []
+
