@@ -1,0 +1,24 @@
+type: Test
+spec:
+  id: checkout-setup-cart
+  name: 'Setup: Add items for checkout test'
+  description: Add items to cart for user 1997
+  trigger:
+    type: grpc
+    grpc:
+      protobufFile: ../../../pb/demo.proto
+      address: cart:7070
+      method: oteldemo.CartService.AddItem
+      request: |-
+        {
+          "userId": "1997",
+          "item": {
+            "productId": "66VCHSJNUP",
+            "quantity": 2
+          }
+        }
+  specs:
+  - name: Item added for checkout test
+    selector: span[name="POST /oteldemo.CartService/AddItem"]
+    assertions:
+    - attr:grpc.status_code = 0
