@@ -236,6 +236,7 @@ install_kube_stack() {
   helm upgrade --install "$KUBE_STACK_RELEASE" "$KUBE_STACK_CHART" \
     --namespace "$NAMESPACE" \
     --values "$VALUES_URL" \
+    --values kubernetes/elastic-helm/kube-stack-overrides.yml \
     --version "$KUBE_STACK_VERSION"
 }
 
