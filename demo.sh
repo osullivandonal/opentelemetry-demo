@@ -51,16 +51,22 @@ elasticsearch_endpoint=""
 elasticsearch_api_key=""
 
 usage() {
-  echo "Run the script with no arguments. This will start an interactive prompt that will guide you through the setup of the Elastic OpenTelemetry Demo."
+  echo "Usage: $0 [--serverless|--cloud-hosted] [--docker|--k8s]"
   echo
-  echo "To destroy the demo, run: $0 destroy [docker|k8s]"
-  echo "  - pass 'docker' or 'k8s' to destroy only that platform"
-  echo "  - omit the platform to destroy both docker and k8s resources"
+  echo "Options:"
+  echo "  -s, --serverless    Use Elastic serverless"
+  echo "  -c, --cloud-hosted  Use Elastic cloud-hosted"
+  echo "  -k, --k8s           Deploy to Kubernetes"
+  echo "  -d, --docker        Deploy to Docker"
+  echo
+  echo "To destroy: $0 destroy [docker|k8s]"
   exit 1
 }
 
 parse_args() {
-  if [ $# -eq 4 ]; then
+  # Support legacy 4-argument format for CI/tests
+  if [ -n "${CI:-}" ] && [ $# -eq 4 ] && [ "${1#-}" = "$1" ]; then
+    # First arg doesn't start with dash, assume legacy positional format
     deployment_type="$1"
     platform="$2"
     elasticsearch_endpoint="$3"
@@ -68,38 +74,23 @@ parse_args() {
     return
   fi
 
-  if [ $# -eq 0 ]; then
-
-    while true; do
-      echo
-      printf "❓ Which Elasticsearch deployment type do you want to send the data into? [serverless/cloud-hosted]? "
-      read -r deployment_type
-      case "$deployment_type" in
-      cloud-hosted | serverless) break ;;
-      *) echo "Please enter 'cloud-hosted' or 'serverless'." ;;
-      esac
-    done
-
-    while true; do
-      echo
-      printf "❓ In which environment the demo should be deployed? [docker/k8s]? "
-      read -r platform
-      case "$platform" in
-      docker | k8s) break ;;
-      *) echo "Please enter 'docker' or 'k8s'." ;;
-      esac
-    done
-    return
-  fi
-
-  if [ "$1" = "destroy" ]; then
-    destroy="true"
-    if [ $# -ge 2 ]; then
-      platform="$2"
-    fi
-    return
-  fi
-  usage
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --serverless|-s) deployment_type="serverless"; shift ;;
+      --cloud-hosted|-c) deployment_type="cloud-hosted"; shift ;;
+      --k8s|-k) platform="k8s"; shift ;;
+      --docker|-d) platform="docker"; shift ;;
+      destroy)
+        destroy="true"
+        shift;
+        if [ "${1:-}" = "docker" ] || [ "${1:-}" = "k8s" ]; then
+          platform="$1"
+          shift
+        fi
+        ;;
+      *) shift ;;
+    esac
+  done
 }
 
 update_env_var() {
@@ -246,6 +237,10 @@ install_demo_chart() {
 start_k8s() {
   ensure_k8s_prereqs
   apply_k8s_secret
+
+  update_env_var "ELASTICSEARCH_ENDPOINT" "$elasticsearch_endpoint"
+  update_env_var "ELASTICSEARCH_API_KEY" "$elasticsearch_api_key"
+
   install_kube_stack
   install_demo_chart
 }
