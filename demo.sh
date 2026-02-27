@@ -54,13 +54,14 @@ usage() {
   echo "Usage: $0 [--serverless|--cloud-hosted] [--docker|--k8s]"
   echo
   echo "Options:"
-  echo "  -s, --serverless    Use Elastic serverless"
+  echo "  -s, --serverless    Use Elastic serverless (default)"
   echo "  -c, --cloud-hosted  Use Elastic cloud-hosted"
   echo "  -k, --k8s           Deploy to Kubernetes"
-  echo "  -d, --docker        Deploy to Docker"
+  echo "  -d, --docker        Deploy to Docker (default)"
   echo
   echo "To destroy: $0 destroy [docker|k8s]"
   exit 1
+
 }
 
 parse_args() {
@@ -74,6 +75,7 @@ parse_args() {
     return
   fi
 
+  # Get users command from the cli
   while [ $# -gt 0 ]; do
     case "$1" in
       --serverless|-s) deployment_type="serverless"; shift ;;
@@ -91,6 +93,39 @@ parse_args() {
       *) shift ;;
     esac
   done
+
+  if [ "$destroy" != "true" ]; then
+    if [ -z "$deployment_type" ]; then
+      if ! check_existing_credentials; then
+        printf "🔑 Enter your Elastic endpoint: "
+        read -r elasticsearch_endpoint
+
+        read_secret elasticsearch_api_key "🔑 Enter your Elastic API key: "
+      fi
+      deployment_type=$(detect_deployment_type "$elasticsearch_endpoint")
+    fi
+
+    set_default_config
+  fi
+}
+
+set_default_config() {
+  if [ -z "$deployment_type" ]; then
+    deployment_type="serverless"
+  fi
+
+  if [ -z "$platform" ] && [ "$destroy" = "false" ]; then
+    platform="docker"
+  fi
+}
+
+detect_deployment_type() {
+  _detect_deployment_type="$1"
+  if echo "$_detect_deployment_type" | grep -q '\.ingest\.'; then
+    echo "serverless"
+  else
+    echo "cloud-hosted"
+  fi
 }
 
 update_env_var() {
@@ -159,8 +194,13 @@ check_existing_credentials() {
     return 1
   fi
 
-  elasticsearch_endpoint=$(grep "^ELASTICSEARCH_ENDPOINT=" "$ENV_OVERRIDE_FILE" | cut -d'=' -f2- | tr -d '"')
-  elasticsearch_api_key=$(grep "^ELASTICSEARCH_API_KEY=" "$ENV_OVERRIDE_FILE" | cut -d'=' -f2- | tr -d '"')
+  # Only read from file if not already set
+  if [ -z "$elasticsearch_endpoint" ]; then
+    elasticsearch_endpoint=$(grep "^ELASTICSEARCH_ENDPOINT=" "$ENV_OVERRIDE_FILE" | cut -d'=' -f2- | tr -d '"')
+  fi
+  if [ -z "$elasticsearch_api_key" ]; then
+    elasticsearch_api_key=$(grep "^ELASTICSEARCH_API_KEY=" "$ENV_OVERRIDE_FILE" | cut -d'=' -f2- | tr -d '"')
+  fi
 
   if [ -n "$elasticsearch_endpoint" ] && [ -n "$elasticsearch_api_key" ] &&
     [ "$elasticsearch_endpoint" != "YOUR_ENDPOINT" ] &&
@@ -169,8 +209,8 @@ check_existing_credentials() {
     return 0
   fi
 
-  elasticsearch_endpoint=""
-  elasticsearch_api_key=""
+  # elasticsearch_endpoint=""
+  # elasticsearch_api_key=""
   return 1
 }
 
