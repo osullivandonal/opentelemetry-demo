@@ -1,68 +1,127 @@
 collectors:
-    daemon:
-      config:
-        processors:
-          k8sattributes:
-            filter:
-              node_from_env_var: OTEL_K8S_NODE_NAME
-            passthrough: false
-            pod_association:
-              - sources:
-                  - from: resource_attribute
-                    name: k8s.pod.ip
-              - sources:
-                  - from: resource_attribute
-                    name: k8s.pod.uid
-              - sources:
-                  - from: connection
-            extract:
-              metadata:
-                - "k8s.namespace.name"
-                - "k8s.deployment.name"
-                - "k8s.replicaset.name"
-                - "k8s.statefulset.name"
-                - "k8s.daemonset.name"
-                - "k8s.cronjob.name"
-                - "k8s.job.name"
-                - "k8s.node.name"
-                - "k8s.pod.name"
-                - "k8s.pod.ip"
-                - "k8s.pod.uid"
-                - "k8s.pod.start_time"
-                - "container.id"              # <-- added
-                - "service.name"
-                - "service.version"
-                - "service.instance.id"
-        service:
-          pipelines:
-            traces/apm:
-              receivers:
-                - otlp
-              processors:
-                - k8sattributes           # <-- added
-                - batch
-                - resource/hostname
-              exporters:
-                - otlp/gateway
-            logs/apm:
-              receivers:
-                - otlp
-              processors:
-                - k8sattributes           # <-- added
-                - batch
-                - resource/hostname
-              exporters:
-                - otlp/gateway
-            metrics/otel-apm:
-              receivers:
-                - otlp
-              processors:
-                - k8sattributes           # <-- added
-                - batch/metrics
-                - resource/hostname
-              exporters:
-                - otlp/gateway
-    gateway:
-      config:
-        processors:
-          batch: {}    # add this to prevent null
+  daemon:
+    config:
+      processors:
+        k8sattributes:
+          filter:
+            node_from_env_var: OTEL_K8S_NODE_NAME
+          passthrough: false
+          pod_association:
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.ip
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.uid
+            - sources:
+                - from: connection
+          extract:
+            metadata:
+              - "k8s.namespace.name"
+              - "k8s.deployment.name"
+              - "k8s.replicaset.name"
+              - "k8s.statefulset.name"
+              - "k8s.daemonset.name"
+              - "k8s.cronjob.name"
+              - "k8s.job.name"
+              - "k8s.node.name"
+              - "k8s.pod.name"
+              - "k8s.pod.ip"
+              - "k8s.pod.uid"
+              - "k8s.pod.start_time"
+              - "container.id"
+              - "service.name"
+              - "service.version"
+              - "service.instance.id"
+      # No changes to daemon APM pipelines - keep defaults (no k8sattributes)
+  gateway:
+    config:
+      processors:
+        batch: {}
+        k8sattributes:
+          passthrough: false
+          pod_association:
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.uid
+            - sources:
+                - from: resource_attribute
+                  name: k8s.pod.ip
+          extract:
+            metadata:
+              - "k8s.namespace.name"
+              - "k8s.deployment.name"
+              - "k8s.replicaset.name"
+              - "k8s.statefulset.name"
+              - "k8s.daemonset.name"
+              - "k8s.cronjob.name"
+              - "k8s.job.name"
+              - "k8s.node.name"
+              - "k8s.pod.name"
+              - "k8s.pod.ip"
+              - "k8s.pod.uid"
+              - "k8s.pod.start_time"
+              - "container.id"
+              - "service.name"
+              - "service.version"
+              - "service.instance.id"
+      connectors:
+        routing:
+          default_pipelines: [metrics/infra]
+          error_mode: ignore
+          table:
+            - condition: resource.attributes["telemetry.sdk.name"] != nil
+              pipelines: [metrics/apm]
+        routing/logs:
+          default_pipelines: [logs/infra]
+          error_mode: ignore
+          table:
+            - condition: resource.attributes["telemetry.sdk.name"] != nil
+              pipelines: [logs/apm]
+        routing/traces:
+          default_pipelines: [traces/infra]
+          error_mode: ignore
+          table:
+            - condition: resource.attributes["telemetry.sdk.name"] != nil
+              pipelines: [traces/apm]
+      service:
+        pipelines:
+          # Override default pipelines - these become entry points that route
+          metrics:
+            receivers: [otlp]
+            processors: []
+            exporters: [routing]
+          logs:
+            receivers: [otlp]
+            processors: []
+            exporters: [routing/logs]
+          traces:
+            receivers: [otlp]
+            processors: []
+            exporters: [routing/traces]
+          # Infra pipelines (pass-through, already enriched by daemon)
+          metrics/infra:
+            receivers: [routing]
+            processors: []
+            exporters: [debug, otlp/ingest_metrics_traces]
+          logs/infra:
+            receivers: [routing/logs]
+            processors: []
+            exporters: [debug, otlp/ingest_logs]
+          traces/infra:
+            receivers: [routing/traces]
+            processors: []
+            exporters: [debug, otlp/ingest_metrics_traces]
+          # APM pipelines (with k8sattributes enrichment)
+          metrics/apm:
+            receivers: [routing]
+            processors: [k8sattributes, batch]
+            exporters: [debug, otlp/ingest_metrics_traces]
+          logs/apm:
+            receivers: [routing/logs]
+            processors: [k8sattributes, batch]
+            exporters: [debug, otlp/ingest_logs]
+          traces/apm:
+            receivers: [routing/traces]
+            processors: [k8sattributes, batch]
+            exporters: [debug, otlp/ingest_metrics_traces]
