@@ -1,0 +1,13 @@
+collectors:
+  gateway:
+    # Enable the profiles feature gate
+    args:
+      feature-gates: "service.profilesSupport"
+    config:
+      service:
+        pipelines:
+          # Add profiles pipeline - receives from profiler, exports to Elastic
+          profiles:
+            receivers: [otlp]
+            processors: []
+            exporters: [debug, otlp/ingest_metrics_traces]

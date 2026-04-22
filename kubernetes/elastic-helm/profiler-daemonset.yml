@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-profiler
+  namespace: opentelemetry-operator-system
+spec:
+  selector:
+    matchLabels:
+      app: otel-profiler
+  template:
+    metadata:
+      labels:
+        app: otel-profiler
+    spec:
+      hostPID: true
+      serviceAccountName: otel-profiler
+      containers:
+      - name: profiler
+        image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler:latest
+        args:
+          - "--config=/etc/otelcol/config.yaml"
+          - "--feature-gates=service.profilesSupport"
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBERNETES_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: config
+          mountPath: /etc/otelcol
+        - name: proc
+          mountPath: /proc
+          readOnly: true
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: otel-profiler-config
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-profiler-config
+  namespace: opentelemetry-operator-system
+data:
+  config.yaml: |
+    receivers:
+      profiling:
+    processors:
+      resourcedetection:
+        detectors: [system]
+        system:
+          hostname_sources: ["os"]
+          resource_attributes:
+            host.id:
+              enabled: true
+            host.name:
+              enabled: true
+      k8sattributes:
+        auth_type: "serviceAccount"
+        passthrough: false
+        filter:
+          node_from_env_var: KUBERNETES_NODE_NAME
+        extract:
+          metadata:
+            - k8s.pod.name
+            - k8s.namespace.name
+            - k8s.node.name
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: container.id
+    exporters:
+      otlp:
+        endpoint: opentelemetry-kube-stack-gateway-collector.opentelemetry-operator-system.svc.cluster.local:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        profiles:
+          receivers: [profiling]
+          processors: [resourcedetection, k8sattributes]
+          exporters: [otlp]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-profiler
+  namespace: opentelemetry-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-profiler
+rules:
+- apiGroups: [""]
+  resources: ["pods", "namespaces", "nodes"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-profiler
+subjects:
+- kind: ServiceAccount
+  name: otel-profiler
+  namespace: opentelemetry-operator-system
+roleRef:
+  kind: ClusterRole
+  name: otel-profiler
+  apiGroup: rbac.authorization.k8s.io
+

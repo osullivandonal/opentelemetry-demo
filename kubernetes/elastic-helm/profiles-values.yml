@@ -1,0 +1,48 @@
+mode: daemonset
+image:
+  repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler
+hostPID: true
+securityContext:
+  privileged: true
+# Disable default presets that add unsupported receivers
+presets:
+  kubernetesAttributes:
+    enabled: false
+  kubeletMetrics:
+    enabled: false
+  hostMetrics:
+    enabled: false
+  logsCollection:
+    enabled: false
+extraVolumes:
+  - name: proc
+    hostPath:
+      path: /proc
+  - name: sys
+    hostPath:
+      path: /sys
+extraVolumeMounts:
+  - name: proc
+    mountPath: /proc
+    readOnly: true
+  - name: sys
+    mountPath: /sys
+    readOnly: true
+config:
+  extensions:
+    health_check:
+      endpoint: 0.0.0.0:13133
+  receivers:
+    profiling:
+      ebpf: {}
+  exporters:
+    otlp:
+      endpoint: opentelemetry-kube-stack-gateway-collector.opentelemetry-operator-system.svc.cluster.local:4317
+      tls:
+        insecure: true
+  service:
+    extensions: [health_check]
+    pipelines:
+      profiles:
+        receivers: [profiling]
+        exporters: [otlp]

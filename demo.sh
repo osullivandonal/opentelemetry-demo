@@ -208,7 +208,13 @@ install_kube_stack() {
   helm upgrade --install "$KUBE_STACK_RELEASE" "$KUBE_STACK_CHART" \
     --namespace "$NAMESPACE" \
     --values "$KUBE_STACK_VALUES_URL" \
+    --values kubernetes/elastic-helm/kube-stack-override.yml \
     --version "$KUBE_STACK_VERSION"
+
+  # helm upgrade --install otel-profiler open-telemetry/opentelemetry-collector \
+  #   --namespace "$NAMESPACE" \
+  #   -f kubernetes/elastic-helm/profiles-values.yml
+  kubectl apply -f kubernetes/elastic-helm/profiler-daemonset.yml
 }
 
 install_demo_chart() {
@@ -236,6 +242,8 @@ destroy_k8s() {
   echo
   helm uninstall "$DEMO_RELEASE" --ignore-not-found
   helm uninstall "$KUBE_STACK_RELEASE" -n "$NAMESPACE" --ignore-not-found
+  # helm uninstall otel-profiler -n "$NAMESPACE" --ignore-not-found
+  kubectl delete -f kubernetes/elastic-helm/profiler-daemonset.yml --ignore-not-found
   kubectl delete secret "$SECRET_NAME" -n "$NAMESPACE" --ignore-not-found
   kubectl delete namespace "$NAMESPACE" --ignore-not-found --wait=false --timeout=60s
   echo
