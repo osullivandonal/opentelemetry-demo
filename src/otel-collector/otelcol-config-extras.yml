@@ -16,3 +16,17 @@
 #    pipelines:
 #      traces:
 #        exporters: [spanmetrics, otlp_http/example]
+exporters:
+    otlphttp/elastic:
+      endpoint: "elastic url"
+      headers:
+        Authorization: "ApiKey <api-key>"
+service:
+  pipelines:
+    traces:
+      exporters: [otlphttp/elastic, spanmetrics]  # Keep spanmetrics!
+    metrics:
+      exporters: [otlphttp/elastic]
+    logs:
+      exporters: [otlphttp/elastic]
+
