@@ -1,0 +1,24 @@
+opentelemetry-collector:
+  config:
+    exporters:
+      otlphttp/elastic:
+        endpoint: "elastic url"
+        headers:
+          Authorization: "ApiKey <api-key>"
+
+    service:
+      pipelines:
+        traces:
+          exporters: [otlphttp/elastic, spanmetrics]
+        metrics:
+          exporters: [otlphttp/elastic]
+        logs:
+          exporters: [otlphttp/elastic]
+jaeger:
+  enabled: false
+prometheus:
+  enabled: false
+opensearch:
+  enabled: false
+grafana:
+  enabled: false
