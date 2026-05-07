@@ -16,15 +16,45 @@
 #    pipelines:
 #      traces:
 #        exporters: [spanmetrics, otlp_http/example]
+processors:
+  resourcedetection:
+    detectors: [env, docker, system]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.arch:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: true
+        host.cpu.family:
+          enabled: true
+        host.cpu.model.id:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.stepping:
+          enabled: true
+        host.cpu.cache.l2.size:
+          enabled: true
+        os.description:
+          enabled: true
+        os.type:
+          enabled: true
 exporters:
     otlphttp/elastic:
-      endpoint: "elastic url"
+      endpoint: "https://your-elastic-endpoint:443"
       headers:
-        Authorization: "ApiKey <api-key>"
+        Authorization: "ApiKey YOUR_API_KEY"
 service:
   pipelines:
     traces:
-      exporters: [otlphttp/elastic, spanmetrics]  # Keep spanmetrics!
+      exporters: [otlphttp/elastic]
     metrics:
       exporters: [otlphttp/elastic]
     logs:
