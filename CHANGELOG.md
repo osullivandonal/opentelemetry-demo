@@ -12,6 +12,9 @@ the release.
   ([#3582](https://github.com/open-telemetry/opentelemetry-demo/pull/3582))
 * [payment] Annotate synthetic load-generator payment requests with the
   `user_agent.synthetic.type` semantic convention attribute.
+* [checkout] Migrate OTLP exporters (traces, metrics, logs) from gRPC to
+  http/protobuf
+  ([#3618](https://github.com/open-telemetry/opentelemetry-demo/pull/3618))
 * [shipping] Migrate OTLP exporters (traces, metrics, logs) from gRPC to
   http/protobuf
   ([#3619](https://github.com/open-telemetry/opentelemetry-demo/pull/3619))
