@@ -159,9 +159,11 @@ jobs:
           filters: |
             react_native:
               - 'src/react-native-app/**'
-              - '.github/workflows/**'
+              - 'Makefile'
+              - '.github/workflows/checks.yml'
+              - '.github/workflows/react-native-build.yml'
 
-  react-native-android:
+  react-native-build:
     needs: check-react-native-changes
     if: needs.check-react-native-changes.outputs.should_build == 'true'
     uses: ./.github/workflows/react-native-build.yml
@@ -193,7 +195,7 @@ jobs:
       sanity,
       checklicense,
       weaver-check,
-      react-native-android,
+      react-native-build,
       codeql-analysis,
       zizmor
     ]
