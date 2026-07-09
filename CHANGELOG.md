@@ -7,6 +7,13 @@ the release.
 
 ## Unreleased
 
+* [load-generator] Lower the `WebsiteBrowserUser` weight so only a small
+  proportion of virtual users spawn a persistent headless Chromium process
+  when browser traffic is enabled, instead of scaling 1:1 with `LOCUST_USERS`
+  and exhausting the container's memory limit. Ratio is configurable via the
+  new `LOCUST_HTTP_USER_WEIGHT` and `LOCUST_BROWSER_USER_WEIGHT` variables,
+  documented in the load generator's README
+  ([#2678](https://github.com/open-telemetry/opentelemetry-demo/issues/2678))
 * [email] Set `event_name` on the order-confirmation log record
   (`email.confirmation_sent`), using the OTel Ruby Logs API's `event_name`
   parameter directly.
