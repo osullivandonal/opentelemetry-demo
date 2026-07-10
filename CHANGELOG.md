@@ -7,6 +7,13 @@ the release.
 
 ## Unreleased
 
+* [compose] Run `checkout`, `product-catalog`, and `shipping` with a
+  read-only root filesystem (`read_only: true` plus a `/tmp` tmpfs mount),
+  for container platforms that prohibit writable root filesystems. Limited
+  to these three services for now since they're the ones verified to have
+  no runtime file writes of their own; other services write files at
+  startup and need dedicated tmpfs mounts before they can be switched over
+  ([#1731](https://github.com/open-telemetry/opentelemetry-demo/issues/1731))
 * [llm] Increase `llm` service memory limit from 50M to 100M to prevent a
   startup restart loop caused by the container exceeding its memory limit
   ([#2944](https://github.com/open-telemetry/opentelemetry-demo/issues/2944))
