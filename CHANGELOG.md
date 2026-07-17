@@ -283,6 +283,18 @@ the release.
   ([#3521](https://github.com/open-telemetry/opentelemetry-demo/pull/3521))
 * [cart,accounting] Use source-generated logging with EventName
   ([#3559](https://github.com/open-telemetry/opentelemetry-demo/pull/3559))
+* [load-generator] Replace Locust with k6, using a custom `xk6-otel`
+  extension for OTel trace/log/metric correlation and k6's built-in browser
+  module for browser-driven traffic
+  ([#3564](https://github.com/open-telemetry/opentelemetry-demo/pull/3564))
+* [load-generator] Add a `loadGeneratorTraffic` feature flag that pauses
+  all synthetic traffic when turned off, resuming when toggled back on
+  ([#3564](https://github.com/open-telemetry/opentelemetry-demo/pull/3564))
+* [load-generator] Add a `loadGeneratorVUs` feature flag to control HTTP
+  scenario concurrency. k6 v2 can't resize a running test's VU pool, so an
+  entrypoint.sh wrapper restarts k6 with the new VU count whenever the flag
+  changes
+  ([#3564](https://github.com/open-telemetry/opentelemetry-demo/pull/3564))
 * [opamp] Add an OpAMP server and configure the Collector to report status,
   version, attributes, and effective configuration through the OpAMP extension
   ([#3566](https://github.com/open-telemetry/opentelemetry-demo/pull/3566))
@@ -357,7 +369,7 @@ the release.
   convert OpenLLMetry/Traceloop instrumentation telemetry (from the agent
   service) into official GenAI semantic conventions (`gen_ai.*` attributes).
   Bump collector-contrib to v0.155.0 which includes the processor
-  ([#3526](https://github.com/open-telemetry/opentelemetry-demo/issues/3526))
+  ([#3604](https://github.com/open-telemetry/opentelemetry-demo/pull/3604))
 * [load-generator] Fix `synthetic_request` (and `session.id`) baggage being
   discarded before reaching any backend service, due to the baggage-bearing
   context being attached inside a span's `with` block so that the span's exit
