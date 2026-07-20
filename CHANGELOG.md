@@ -7,6 +7,9 @@ the release.
 
 ## Unreleased
 
+* [kafka] Add `KAFKA_TOPIC` environment variable to configure the Kafka topic
+  name used by `checkout`, `accounting`, and `fraud-detection`, defaulting to
+  `orders` to preserve existing behavior
 * [grafana] Add service, EventName, and severity filters to the "Events by Name"
   dashboard.
 * [flagd-ui] Navigate between the `Basic` and `Advanced` tabs with LiveView
