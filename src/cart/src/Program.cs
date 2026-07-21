@@ -19,11 +19,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Instrumentation.StackExchangeRedis;
+using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 using OpenFeature;
 using OpenFeature.Hooks;
-using Microsoft.Extensions.Hosting;
 using OpenFeature.Providers.Flagd;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,10 +40,10 @@ builder.AddElasticOpenTelemetry(otelBuilder => otelBuilder
         .AddRedisInstrumentation(
             options => options.SetVerboseDatabaseStatements = true))
     .WithMetrics(meterBuilder => meterBuilder
-        .AddMeter("OpenTelemetry.Demo.Cart")));
+        .AddMeter("OpenTelemetry.Demo.Cart")
+        .AddMeter("OpenFeature")));
 
-builder.Logging
-    .AddConsole();
+builder.Logging.AddConsole();
 
 builder.Services.AddSingleton<ICartStore>(x =>
 {
@@ -52,12 +52,12 @@ builder.Services.AddSingleton<ICartStore>(x =>
     return store;
 });
 
-builder.Services.AddSingleton<IFeatureClient>(x =>
+builder.Services.AddOpenFeature(openFeatureBuilder =>
 {
-    var flagdProvider = new FlagdProvider();
-    Api.Instance.SetProviderAsync(flagdProvider).GetAwaiter().GetResult();
-    var client = Api.Instance.GetClient();
-    return client;
+    openFeatureBuilder
+        .AddProvider(_ => new FlagdProvider())
+        .AddHook<MetricsHook>()
+        .AddHook<TraceEnricherHook>();
 });
 
 builder.Services.AddSingleton(x =>
@@ -67,12 +67,11 @@ builder.Services.AddSingleton(x =>
         x.GetRequiredService<IFeatureClient>()
 ));
 
-Api.Instance.AddHooks(new TraceEnricherHook());
+
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<readinessCheck>();
 builder.Services.AddGrpcHealthChecks()
-    .AddCheck("Sample", () => HealthCheckResult.Healthy());
-
+    .AddCheck<readinessCheck>("oteldemo.CartService");
 
 builder.Services.AddSingleton<HealthServiceImpl>();
 
@@ -90,5 +89,4 @@ app.MapGet("/", async context =>
 });
 
 app.Run();
-
 

@@ -1,17 +1,12 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
-# Disables local observability backends when using Elastic
+# Selects the standalone Elastic collector configuration after the upstream
+# full and observability layers have been applied.
 services:
-  opensearch:
-    deploy:
-      replicas: 0
-  grafana:
-    deploy:
-      replicas: 0
-  jaeger:
-    deploy:
-      replicas: 0
-  prometheus:
-    deploy:
-      replicas: 0
-
+  otel-collector:
+    command:
+      - --config=/etc/otelcol-config.yml
+      - --config=/etc/otelcol-config-extras.yml
+    environment:
+      - ELASTIC_OTLP_ENDPOINT
+      - ELASTIC_OTLP_API_KEY

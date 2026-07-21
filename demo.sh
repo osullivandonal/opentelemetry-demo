@@ -171,7 +171,13 @@ start_docker() {
   export ELASTIC_OTLP_ENDPOINT="$elastic_otlp_endpoint"
   export ELASTIC_OTLP_API_KEY="$elastic_otlp_api_key"
 
-  make start
+  docker compose --env-file .env --env-file .env.override \
+    -f compose.yaml \
+    -f compose.full.yaml \
+    -f compose.observability.yaml \
+    -f compose.extras.yaml \
+    -f docker-compose.elastic.yml \
+    up --force-recreate --remove-orphans --detach
 }
 
 start_docker_upstream() {
@@ -185,8 +191,9 @@ start_docker_upstream() {
   # Here we use docker compose instead of make start as we do not want to use the .env.override file.
   # This allows us to run the upstream demo, no EDOT collector and no EDOT SDKs.
   docker compose --env-file .env \
-    -f docker-compose.yml \
-    -f docker-compose.elastic.yml \
+    -f compose.yaml \
+    -f compose.full.yaml \
+    -f compose.extras.yaml \
     up --force-recreate --remove-orphans --detach
 }
 
@@ -200,7 +207,11 @@ start_docker_self_hosted() {
   # Use docker compose with the self-hosted override file to connect
   # the otel-collector to the elastic-start-local network
   docker compose --env-file .env --env-file .env.override \
-    -f docker-compose.yml \
+    -f compose.yaml \
+    -f compose.full.yaml \
+    -f compose.observability.yaml \
+    -f compose.extras.yaml \
+    -f docker-compose.elastic.yml \
     -f docker-compose.elastic-self-hosted.yml \
     up --force-recreate --remove-orphans --detach
 
