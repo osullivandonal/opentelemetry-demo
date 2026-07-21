@@ -46,4 +46,3 @@ service:
       exporters: [otlphttp/elastic]
     logs:
       exporters: [otlphttp/elastic]
-

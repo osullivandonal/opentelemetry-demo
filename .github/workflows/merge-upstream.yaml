@@ -47,13 +47,13 @@ jobs:
         run: |
           BRANCH_NAME="auto-merge/upstream-$(date +%Y%m%d-%H%M%S)"
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-      
+
           # Create branch from main (which has all your Elastic changes)
           git checkout -b "${BRANCH_NAME}" main
-          
+
           # Attempt to merge upstream/main into it
           git merge upstream/main --no-edit || echo "Merge conflicts detected"
-          
+
           # Push the branch (even if there are conflicts)
           git push origin "${BRANCH_NAME}"
 
@@ -68,12 +68,12 @@ jobs:
           title: "chore: Merge with upstream opentelemetry-demo"
           body: |
             ## Automated upstream merge
-          
+
             This PR merges with the upstream opentelemetry-demo repository.
-            
+
             ### Changes from upstream
             - ${{ steps.check.outputs.commits_behind }} new commits
-            
+
             ### If there are conflicts
             Check out this branch and resolve them:
             \`\`\`bash
@@ -84,7 +84,7 @@ jobs:
             git commit
             git push
             \`\`\`
-            
+
             **Note:** If \`src/payment/package.json\` conflicts, take upstream version and add:
             \`\`\`json
             \"@elastic/opentelemetry-node\": \"1.5.0\"
@@ -93,7 +93,7 @@ jobs:
             \`\`\`json
             \"start\": \"OTEL_EXPORTER_OTLP_PROTOCOL=grpc node --require @elastic/opentelemetry-node index.js\"
             \`\`\`
-            
+
             ---
             *This PR was automatically created.*
           delete-branch: true
@@ -110,5 +110,5 @@ jobs:
           channel-id: "C0AA2B1949M"  #otel-demo-ci
           message: |
             :warning: Upstream merge workflow failed for `${{ github.repository }}@${{ github.ref_name }}`.
-            
+
             Please check <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the workflow run>.
