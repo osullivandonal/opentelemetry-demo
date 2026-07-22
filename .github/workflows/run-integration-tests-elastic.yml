@@ -15,6 +15,9 @@ jobs:
   run-tests:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      INTEGRATION_TEST_IMAGE_NAME: otel-demo-integration-tests
+      INTEGRATION_TEST_DEMO_VERSION: test
 
     steps:
     - name: Free up disk space
@@ -33,7 +36,9 @@ jobs:
 
     - name: Build images from source
       run: |
-        IMAGE_NAME=otel-demo-integration-tests DEMO_VERSION=test docker compose --env-file .env --env-file .env.override build --parallel
+        IMAGE_NAME="$INTEGRATION_TEST_IMAGE_NAME" \
+          DEMO_VERSION="$INTEGRATION_TEST_DEMO_VERSION" \
+          docker compose --env-file .env --env-file .env.override build --parallel
 
     - name: Create k8s Kind Cluster
       uses: helm/kind-action@v1
