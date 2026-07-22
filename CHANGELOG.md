@@ -7,6 +7,10 @@ the release.
 
 ## Unreleased
 
+* [currency] Guard the `VERSION` environment variable lookup against `nullptr`:
+  constructing a `std::string` directly from `std::getenv("VERSION")` crashes
+  when the variable is unset, so fall back to `"unknown"` instead
+  ([#3743](https://github.com/open-telemetry/opentelemetry-demo/pull/3743))
 * [react-native-app] Use `getUniqueIdSync()` instead of `getDeviceId()` to
   populate the `device.id` resource attribute. `getDeviceId()` returns the
   hardware/model identifier (e.g. `iPhone13,4`), which is the same for every
