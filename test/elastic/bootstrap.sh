@@ -6,6 +6,14 @@ set -a
 source .env.override
 set +a
 
+if [[ -n "${INTEGRATION_TEST_IMAGE_NAME:-}" ]]; then
+  export IMAGE_NAME="$INTEGRATION_TEST_IMAGE_NAME"
+fi
+
+if [[ -n "${INTEGRATION_TEST_DEMO_VERSION:-}" ]]; then
+  export DEMO_VERSION="$INTEGRATION_TEST_DEMO_VERSION"
+fi
+
 CURRENT_DIR=$(pwd)
 export CURRENT_DIR
 export START_LOCAL_DIR="${CURRENT_DIR}/elastic-start-local"
