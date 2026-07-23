@@ -7,6 +7,10 @@ the release.
 
 ## Unreleased
 
+* [react-native-app] Fix `ProductCard` price calculation where `nanos` was
+  divided by `100_000_000` (1e8) instead of `1_000_000_000` (1e9), inflating
+  the displayed price
+  ([#3751](https://github.com/open-telemetry/opentelemetry-demo/issues/3751))
 * [agentic] Move agent, chatbot and mcp to OTLP http exporter
   ([#3745](https://github.com/open-telemetry/opentelemetry-demo/pull/3745))
 * [currency] Guard the `VERSION` environment variable lookup against `nullptr`:
