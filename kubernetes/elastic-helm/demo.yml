@@ -12,8 +12,8 @@ default:
     - name: OTEL_K8S_NAMESPACE
       valueFrom:
         fieldRef:
-         apiVersion: v1
-         fieldPath: metadata.namespace
+          apiVersion: v1
+          fieldPath: metadata.namespace
     - name: OTEL_K8S_NODE_NAME
       valueFrom:
         fieldRef:
