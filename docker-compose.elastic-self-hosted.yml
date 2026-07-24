@@ -25,5 +25,5 @@ services:
       - default
       - elastic-start-local
     environment:
-     - ELASTIC_OTLP_ENDPOINT=http://edot-collector:4318
-     - ELASTIC_OTLP_API_KEY=
+      - ELASTIC_OTLP_ENDPOINT=http://edot-collector:4318
+      - ELASTIC_OTLP_API_KEY=
