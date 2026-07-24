@@ -60,7 +60,7 @@ jobs:
       - name: Create Pull Request
         if: steps.check.outputs.commits_behind != '0'
         id: cpr
-        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v8.0.0
+        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725  # v8.0.0
         with:
           token: ${{ steps.get_token.outputs.token }}
           branch: "${{ steps.branch.outputs.branch_name }}"
@@ -107,7 +107,7 @@ jobs:
         uses: elastic/oblt-actions/slack/send@v1
         with:
           bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel-id: "C0AA2B1949M"  #otel-demo-ci
+          channel-id: "C0AA2B1949M"  # otel-demo-ci
           message: |
             :warning: Upstream merge workflow failed for `${{ github.repository }}@${{ github.ref_name }}`.
 
