@@ -41,7 +41,7 @@ processors:
 service:
   pipelines:
     traces:
-      exporters: [otlphttp/elastic, spanmetrics]
+      exporters: [otlphttp/elastic, span_metrics]
     metrics:
       exporters: [otlphttp/elastic]
     logs:
