@@ -3,6 +3,10 @@
 # Selects the standalone Elastic collector configuration after the upstream
 # full and observability layers have been applied.
 services:
+  payment:
+    environment:
+      - NODE_OPTIONS=--import @elastic/opentelemetry-node
+
   otel-collector:
     command:
       - --config=/etc/otelcol-config.yml

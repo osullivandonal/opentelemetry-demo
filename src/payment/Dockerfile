@@ -27,8 +27,6 @@ COPY ./src/payment/logger.js logger.js
 
 EXPOSE ${PAYMENT_PORT}
 
-## The two steps below reproduce what "npm run start" would do, but using
-## distroless we cannot use "npm" directly.
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
-CMD ["--import", "@elastic/opentelemetry-node", "index.js"]
+CMD ["index.js"]
