@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Docker Compose override file for self-hosted deployment with start-local.
-# This file extends docker-compose.yml to connect the otel-collector
+# This file extends compose.yaml to connect the otel-collector
 # to the elastic-start-local network.
 #
 # Usage:
 #   ./demo.sh docker self-hosted
 #
 # Or manually:
-#   docker compose -f docker-compose.yml -f docker-compose.self-hosted.yml up
+#   docker compose -f compose.yaml -f docker-compose.elastic-self-hosted.yml up
 #
 # Prerequisites:
 #   curl -fsSL https://elastic.co/start-local | sh -s -- --edot
@@ -25,5 +25,5 @@ services:
       - default
       - elastic-start-local
     environment:
-     - ELASTIC_OTLP_ENDPOINT=http://edot-collector:4318
-     - ELASTIC_OTLP_API_KEY=
+      - ELASTIC_OTLP_ENDPOINT=http://edot-collector:4318
+      - ELASTIC_OTLP_API_KEY=
