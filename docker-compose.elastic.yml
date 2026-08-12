@@ -5,7 +5,7 @@
 services:
   payment:
     environment:
-      - NODE_OPTIONS=--import @elastic/opentelemetry-node
+      - NODE_OPTIONS=--require @elastic/opentelemetry-node
 
   otel-collector:
     command:
