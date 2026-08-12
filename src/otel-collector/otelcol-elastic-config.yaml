@@ -46,6 +46,14 @@ receivers:
             enabled: true
           process.disk.operations:
             enabled: true
+          process.context_switches:
+           enabled: true
+          process.cpu.utilization:
+           enabled: true
+          process.paging.faults:
+           enabled: true
+          process.uptime:
+           enabled: true
       network: {}
       processes: {}
       load: {}

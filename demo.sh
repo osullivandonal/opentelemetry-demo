@@ -3,7 +3,7 @@
 set -eu
 
 # Constants
-ELASTIC_STACK_VERSION="9.3.0"
+ELASTIC_STACK_VERSION="9.4.4"
 ENV_OVERRIDE_FILE=".env.override"
 NAMESPACE="opentelemetry-operator-system"
 HELM_REPO_NAME="open-telemetry"

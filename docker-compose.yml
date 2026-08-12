@@ -868,7 +868,11 @@ services:
         limits:
           memory: 1.5G
     restart: unless-stopped
-    command: ["--config", "/etc/otelcol-config.yml", "--config", "/etc/otelcol-config-extras.yml" ]
+    command: [
+      "--config", "/etc/otelcol-config.yml",
+      "--config", "/etc/otelcol-config-extras.yml",
+      "--feature-gates=+scraper.process.EmitV1SystemConventions"
+    ]
     user: 0:0
     volumes:
       - ${HOST_FILESYSTEM}:/hostfs:ro
