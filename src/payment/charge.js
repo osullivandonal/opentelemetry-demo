@@ -11,7 +11,9 @@ const flagProvider = new FlagdProvider();
 const logger = require('./logger');
 const tracer = trace.getTracer('payment');
 const meter = metrics.getMeter('payment');
-const transactionsCounter = meter.createCounter('app.payment.transactions');
+const transactionsCounter = meter.createCounter('demo.payment.transactions', {
+  unit: '{transaction}',
+});
 
 const LOYALTY_LEVEL = ['platinum', 'gold', 'silver', 'bronze'];
 
@@ -25,16 +27,23 @@ module.exports.charge = async request => {
   const span = tracer.startSpan('charge');
 
   try {
+    const baggage = propagation.getBaggage(context.active());
+    const syntheticRequest = baggage?.getEntry('synthetic_request')?.value === 'true';
+
+    if (syntheticRequest) {
+      span.setAttribute('user_agent.synthetic.type', 'test');
+    }
+
     await OpenFeature.setProviderAndWait(flagProvider);
 
     const numberVariant = await OpenFeature.getClient().getNumberValue("paymentFailure", 0);
 
     if (numberVariant > 0) {
-      // n% chance to fail with app.loyalty.level=gold
+      // n% chance to fail with demo.user_context.loyalty_level=gold
       if (Math.random() < numberVariant) {
-        span.setAttributes({'app.loyalty.level': 'gold' });
+        span.setAttributes({'demo.user_context.loyalty_level': 'gold' });
 
-        throw new Error('Payment request failed. Invalid token. app.loyalty.level=gold');
+        throw new Error('Payment request failed. Invalid token. demo.user_context.loyalty_level=gold');
       }
     }
 
@@ -54,9 +63,9 @@ module.exports.charge = async request => {
     const loyalty_level = random(LOYALTY_LEVEL);
 
     span.setAttributes({
-      'app.payment.card_type': cardType,
-      'app.payment.card_valid': valid,
-      'app.loyalty.level': loyalty_level
+      'demo.payment.card_type': cardType,
+      'demo.payment.card_valid': valid,
+      'demo.user_context.loyalty_level': loyalty_level
     });
 
     if (!valid) {
@@ -71,17 +80,21 @@ module.exports.charge = async request => {
       throw new Error(`The credit card (ending ${lastFourDigits}) expired on ${month}/${year}.`);
     }
 
-    // Check baggage for synthetic_request=true, and add charged attribute accordingly
-    const baggage = propagation.getBaggage(context.active());
-    if (baggage && baggage.getEntry('synthetic_request') && baggage.getEntry('synthetic_request').value === 'true') {
-      span.setAttribute('app.payment.charged', false);
+    // Do not charge synthetic requests.
+    if (syntheticRequest) {
+      span.setAttribute('demo.payment.charged', false);
     } else {
-      span.setAttribute('app.payment.charged', true);
+      span.setAttribute('demo.payment.charged', true);
+    }
+
+    const enduserId = baggage?.getEntry('enduser.id')?.value;
+    if (enduserId) {
+      span.setAttribute('enduser.id', enduserId);
     }
 
     const { units, nanos, currencyCode } = request.amount;
     logger.info({ transactionId, cardType, lastFourDigits, amount: { units, nanos, currencyCode }, loyalty_level }, 'Transaction complete.');
-    transactionsCounter.add(1, { 'app.payment.currency': currencyCode });
+    transactionsCounter.add(1, { 'demo.payment.currency': currencyCode });
 
     return { transactionId };
   } catch (err) {

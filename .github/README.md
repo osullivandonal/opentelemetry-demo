@@ -7,8 +7,6 @@ The following guide describes how to setup the OpenTelemetry demo with Elastic O
 - The .NET agent within the [Cart service](../src/cart/src/Directory.Build.props) has been replaced with the Elastic distribution of the OpenTelemetry .NET Agent. You can find more information about the Elastic distribution in [this blog post](https://www.elastic.co/observability-labs/blog/elastic-opentelemetry-distribution-dotnet-applications).
 - The Elastic distribution of the OpenTelemetry Node.js Agent has replaced the OpenTelemetry Node.js agent in the [Payment service](../src/payment/package.json). Additional details about the Elastic distribution are available in [this blog post](https://www.elastic.co/observability-labs/blog/elastic-opentelemetry-distribution-node-js).
 - The Elastic distribution for OpenTelemetry Python has replaced the OpenTelemetry Python agent in the [Recommendation service](../src/recommendation/requirements.txt). Additional details about the Elastic distribution are available in [this blog post](https://www.elastic.co/observability-labs/blog/elastic-opentelemetry-distribution-python).
-- The [Product Reviews service](../src/product-reviews/) uses the vanilla OpenTelemetry Python SDK with auto-instrumentation, including the [OpenAI instrumentation](https://pypi.org/project/opentelemetry-instrumentation-openai-v2/) for capturing GenAI semantic conventions when calling the LLM service.
-- The [LLM service](../src/llm/) is intentionally not instrumented, it simulates a third-party LLM API (OpenAI-compatible) and is treated as a black box, as real LLM providers would be.
 
 Additionally, the OpenTelemetry Contrib collector has also been changed to the [Elastic OpenTelemetry Collector distribution](https://github.com/elastic/elastic-agent/blob/main/internal/pkg/otel/README.md). This ensures a more integrated and optimized experience with Elastic Observability.
 
@@ -30,7 +28,7 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 
 ### Self-Hosted with start-local
 
-For local development without Elastic Cloud, use [start-local](https://github.com/elastic/start-local) 
+For local development without Elastic Cloud, use [start-local](https://github.com/elastic/start-local)
 to run Elasticsearch, Kibana, and the EDOT Collector locally.
 
 1. Start the Elastic stack with EDOT:
@@ -38,7 +36,7 @@ to run Elasticsearch, Kibana, and the EDOT Collector locally.
    curl -fsSL https://elastic.co/start-local | sh -s -- --edot
    ```
 2. Start the demo in self-hosted mode:
-   ```bash    
+   ```bash
    ./demo.sh docker self-hosted
    ```
 3. Access:
@@ -67,7 +65,7 @@ For users who do not want to use the Elastic Distribution of OpenTelemetry (EDOT
    ```
 5. Access the demo at `http://localhost:8080`
 
-This mode uses the standard OpenTelemetry Collector contrib image with OTLP HTTP export configured for Elastic, 
+This mode uses the standard OpenTelemetry Collector contrib image with OTLP HTTP export configured for Elastic,
 rather than the EDOT collector, also we do not use EDOT SDKs either, here we use the OTel SDKs to instrument services. All telemetry (traces, metrics, logs) is routed to Elastic via OTLP.
 
 > **Note**: This mode has been tested with [upstream release 2.2.0](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/2.2.0). Some Elastic dashboards may not be fully populated compared to EDOT mode. For general demo documentation, see the [upstream docs](https://opentelemetry.io/docs/demo/).
@@ -93,7 +91,7 @@ make start
 
 
 ### Manual Installation
-<details> 
+<details>
 
 1. Sign up for a free trial on [Elastic Cloud](https://cloud.elastic.co/) and depending on the deployment type choose the following:
     - Elastic Cloud Hosted (ECH): In the "solution view" select "Elastic for Observability". Once that builds select Add data then Application and finally OpenTelemetry.
@@ -138,7 +136,7 @@ For users who do not want to use the Elastic Distribution of OpenTelemetry (EDOT
    ./demo.sh k8s upstream
    ```
 
-This mode uses the standard OpenTelemetry Collector contrib image with OTLP HTTP export configured for Elastic, 
+This mode uses the standard OpenTelemetry Collector contrib image with OTLP HTTP export configured for Elastic,
 rather than the EDOT collector, also we do not use EDOT SDKs either, here we use the OTel SDKs to instrument services. All telemetry (traces, metrics, logs) is routed to Elastic via OTLP.
 
 > **Note**: This mode has been tested with [upstream release 2.2.0](https://github.com/open-telemetry/opentelemetry-demo/releases/tag/2.2.0). Some Elastic dashboards may not be fully populated compared to EDOT mode. For general demo documentation, see the [upstream docs](https://opentelemetry.io/docs/demo/).
@@ -185,7 +183,7 @@ The **Astronomy Shop** is a fully functional e-commerce application built with m
 - **Microservice architecture**: 15+ services written in different languages (Go, Java, .NET, Node.js, Python, etc.)
 - **Automatic traffic generation**: A load generator continuously simulates user activity—browsing products, adding items to cart, and completing checkouts
 - **Distributed communication**: Services communicate via HTTP and gRPC, producing distributed traces that show request flow across the system
-- **GenAI observability**: The product reviews feature includes an AI assistant powered by a mock LLM, demonstrating how to capture GenAI semantic conventions (`gen_ai.*` attributes) in traces
+- **Agentic observability**: The optional agent, chatbot, and MCP services demonstrate telemetry from an AI-assisted shopping workflow
 
 ### How to access the demo
 
@@ -207,7 +205,7 @@ The **Astronomy Shop** is a fully functional e-commerce application built with m
 | **APM → Services** | See all demo services; click one to explore transactions, latency, throughput, and errors |
 | **APM → Service map** | Visualize how services depend on each other; see the request flow architecture |
 | **APM → Traces** | View distributed traces; follow a single request across multiple services (e.g., a checkout flow) |
-| **APM → Services → product-reviews** | See GenAI/LLM traces with `gen_ai.*` attributes (model, token usage, etc.) |
+| **APM → Services** | Explore telemetry from the optional agentic services when that layer is enabled |
 | **Hosts** | See the host running the demo; explore CPU, memory, disk, and network metrics |
 | **Infrastructure → Inventory** | See containers (Docker) or pods/nodes (Kubernetes) |
 | **Dashboards → [System] OTel Host Metrics** | Host-level metrics dashboard |
@@ -221,9 +219,9 @@ Each user action (browse, add to cart, checkout) generates a distributed trace t
 
 **Service map**
 Shows the architecture of the demo application:
-- Frontend calls product catalog, cart, checkout, recommendation, and product-reviews services
+- Frontend calls product catalog, cart, checkout, recommendation, and other core services
 - Checkout orchestrates calls to payment, shipping, and email services
-- Product-reviews calls the LLM service for AI-generated review summaries
+- The optional chatbot calls the agent, which uses MCP tools to interact with the shop
 - All services report to the OpenTelemetry Collector
 
 **Infrastructure metrics**
@@ -232,16 +230,8 @@ CPU, memory, disk I/O, and network metrics from the host and containers running 
 **Kubernetes metrics** (K8s deployments only)
 Pod, node, and deployment metrics from your cluster, including resource utilization and pod status.
 
-**GenAI/LLM observability**
-The product-reviews service calls a mock LLM to generate AI-powered product review summaries. These calls are instrumented using the OpenTelemetry OpenAI instrumentation, which captures GenAI semantic convention attributes:
-- `gen_ai.system` — the LLM provider (e.g., `openai`)
-- `gen_ai.request.model` — the model used (e.g., `astronomy-llm`)
-- `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens` — token consumption
-- `gen_ai.response.id` — unique response identifier
-
-To explore: Go to **APM → Services → product-reviews** and look at traces, or use **Discover** with the query `gen_ai.request.model: *` on the `traces-apm*` index.
-
-> **Optional**: To use a real OpenAI-compatible LLM instead of the mock, configure `.env.override`:
+**Agentic observability**
+The optional agentic layer includes chatbot, agent, and MCP services. To use a real OpenAI-compatible LLM, configure `.env.override`:
 > ```
 > LLM_BASE_URL=https://api.openai.com/v1
 > LLM_MODEL=gpt-4o-mini
@@ -293,7 +283,7 @@ Suppose you want to see how your new processor is going to play out in this demo
    helm install -f deployment.yaml my-otel-demo open-telemetry/opentelemetry-demo
    ```
 
-## Clean-up 
+## Clean-up
 
 - **Docker**. Run `./demo.sh destroy docker`
 - **Kubernetes**. Run `./demo.sh destroy k8s`

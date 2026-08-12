@@ -39,10 +39,18 @@ jobs:
             tag_suffix: ad
             context: ./
             setup-qemu: true
+          - file: ./src/agent/Dockerfile
+            tag_suffix: agent
+            context: ./
+            setup-qemu: true
           - file: ./src/cart/src/Dockerfile
             tag_suffix: cart
             context: ./
             setup-qemu: false
+          - file: ./src/chatbot/Dockerfile
+            tag_suffix: chatbot
+            context: ./
+            setup-qemu: true
           - file: ./src/checkout/Dockerfile
             tag_suffix: checkout
             context: ./
@@ -83,12 +91,20 @@ jobs:
             tag_suffix: kafka
             context: ./
             setup-qemu: true
-          - file: ./src/llm/Dockerfile
-            tag_suffix: llm
-            context: ./
-            setup-qemu: true
           - file: ./src/load-generator/Dockerfile
             tag_suffix: load-generator
+            context: ./
+            setup-qemu: true
+          - file: ./src/mcp/Dockerfile
+            tag_suffix: mcp
+            context: ./
+            setup-qemu: true
+          - file: ./src/opamp-server/Dockerfile
+            tag_suffix: opamp-server
+            context: ./
+            setup-qemu: true
+          - file: ./src/opensearch/Dockerfile
+            tag_suffix: opensearch
             context: ./
             setup-qemu: true
           - file: ./src/payment/Dockerfile
@@ -97,10 +113,6 @@ jobs:
             setup-qemu: true
           - file: ./src/product-catalog/Dockerfile
             tag_suffix: product-catalog
-            context: ./
-            setup-qemu: true
-          - file: ./src/product-reviews/Dockerfile
-            tag_suffix: product-reviews
             context: ./
             setup-qemu: true
           - file: ./src/quote/Dockerfile
@@ -115,8 +127,8 @@ jobs:
             tag_suffix: shipping
             context: ./
             setup-qemu: true
-          - file: ./test/tracetesting/Dockerfile
-            tag_suffix: traceBasedTests
+          - file: ./src/telemetry-docs/Dockerfile
+            tag_suffix: telemetry-docs
             context: ./
             setup-qemu: true
 
