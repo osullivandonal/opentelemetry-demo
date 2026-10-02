@@ -1,0 +1,46 @@
+# Overrides for running the EDOT opentelemetry-kube-stack on a local cluster
+# (e.g. kind) that has no cloud provider metadata endpoint.
+#
+# Fixes applied here:
+# 1. Set an explicit cluster name so k8s.cluster.name is not "unknown_k8s_cluster"
+#    and the cloud resourcedetection processors are no longer needed to populate it.
+# 2. Replace the eks/gcp/aks resourcedetection detectors with "env" so the
+#    collectors do not block on cloud metadata lookups (169.254.169.254) during
+#    startup, which keeps the health_check endpoint at 503 and trips the startup
+#    probe into a restart loop on clusters with no cloud metadata service.
+# 3. Raise the cluster collector memory limit so it is not OOMKilled.
+clusterName: kind
+
+collectors:
+  cluster:
+    resources:
+      requests:
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+    config:
+      processors:
+        resourcedetection/eks:
+          detectors: [env]
+          timeout: 1s
+        resourcedetection/gcp:
+          detectors: [env]
+          timeout: 1s
+        resourcedetection/aks:
+          detectors: [env]
+          timeout: 1s
+
+  daemon:
+    config:
+      processors:
+        resourcedetection/eks:
+          detectors: [env]
+          timeout: 1s
+        resourcedetection/gcp:
+          detectors: [env]
+          timeout: 1s
+        resourcedetection/aks:
+          detectors: [env]
+          timeout: 1s
+        resourcedetection/system:
+          detectors: [system]
