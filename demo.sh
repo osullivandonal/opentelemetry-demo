@@ -3,7 +3,7 @@
 set -eu
 
 # Constants
-ELASTIC_STACK_VERSION="9.5.5"
+ELASTIC_STACK_VERSION="9.6.0-SNAPSHOT"
 ENV_OVERRIDE_FILE=".env.override"
 NAMESPACE="opentelemetry-operator-system"
 HELM_REPO_NAME="open-telemetry"
@@ -171,7 +171,10 @@ start_docker() {
   export ELASTIC_OTLP_ENDPOINT="$elastic_otlp_endpoint"
   export ELASTIC_OTLP_API_KEY="$elastic_otlp_api_key"
 
-  make start
+  docker compose --env-file .env --env-file .env.override \
+       -f docker-compose.yml \
+       -f docker-compose.elastic.yml \
+       up --force-recreate --remove-orphans --detach
 }
 
 start_docker_upstream() {

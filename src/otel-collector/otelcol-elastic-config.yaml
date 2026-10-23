@@ -1,5 +1,7 @@
 exporters:
   debug:
+    verbosity: detailed
+
   otlphttp/elastic:
     endpoint: ${env:ELASTIC_OTLP_ENDPOINT}
     headers:

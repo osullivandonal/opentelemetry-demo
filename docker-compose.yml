@@ -871,7 +871,8 @@ services:
     command: [
       "--config", "/etc/otelcol-config.yml",
       "--config", "/etc/otelcol-config-extras.yml",
-      "--feature-gates=+scraper.process.EmitV1SystemConventions"
+      # "--feature-gates=scraper.process.DontEmitV0SystemConventions,scraper.process.EmitV1SystemConventions"
+      "--feature-gates=scraper.process.EmitV1SystemConventions"
     ]
     user: 0:0
     volumes:
