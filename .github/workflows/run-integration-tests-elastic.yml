@@ -15,36 +15,74 @@ jobs:
   run-tests:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      INTEGRATION_TEST_IMAGE_NAME: otel-demo-integration-tests
+      UPSTREAM_TEST_IMAGE_NAME: otel-demo-upstream-integration-tests
+      INTEGRATION_TEST_DEMO_VERSION: test
 
     steps:
-    - name: Free up disk space
-      run: |
-        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-        sudo docker image prune --all --force
-        sudo docker builder prune -a
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
 
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-    - name: Set up Docker Compose
-      uses: docker/setup-compose-action@v1
-      with:
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@2fe291b7677a45ee1269ec56a42604c143505e7e # v1
+        with:
           version: latest
-    
-    - name: Build images from source
-      run: |
-        IMAGE_NAME=otel-demo-integration-tests DEMO_VERSION=test docker compose --env-file .env --env-file .env.override build --parallel
 
-    - name: Create k8s Kind Cluster
-      uses: helm/kind-action@v1
-    
-    - name: Set up helm
-      uses: azure/setup-helm@v4.3.0
+      - name: Verify Elastic telemetry assertions
+        run: python3 -m unittest discover -s test/elastic -p test_verify_telemetry.py
 
-    - name: Install bashunit
-      run: |
-        curl -sSL https://bashunit.com/install.sh | bash -s bin
+      - name: Build images from source
+        run: |
+          IMAGE_NAME="$INTEGRATION_TEST_IMAGE_NAME" \
+            DEMO_VERSION="$INTEGRATION_TEST_DEMO_VERSION" \
+            docker compose --env-file .env --env-file .env.override \
+            -f compose.yaml \
+            -f compose.full.yaml \
+            -f compose.extras.yaml \
+            -f docker-compose.elastic.yml \
+            build --parallel
 
-    - name: Run the tests
-      run: |
-        ./bin/bashunit --env .env.bashunit
+      - name: Build upstream images from source
+        run: |
+          IMAGE_NAME="$UPSTREAM_TEST_IMAGE_NAME" \
+            DEMO_VERSION="$INTEGRATION_TEST_DEMO_VERSION" \
+            docker compose --env-file .env \
+            -f compose.yaml \
+            -f compose.full.yaml \
+            -f compose.extras.yaml \
+            -f docker-compose.upstream.yml \
+            build --parallel
+
+      - name: Verify Docker modes and .NET telemetry
+        run: python3 test/elastic/docker_mode_smoke.py
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1
+
+      - name: Load PR-built demo images into Kind
+        run: |
+          mapfile -t images < <(docker image ls "${INTEGRATION_TEST_IMAGE_NAME}:${INTEGRATION_TEST_DEMO_VERSION}-*" --format '{{.Repository}}:{{.Tag}}')
+          if [ "${#images[@]}" -eq 0 ]; then
+            echo "No PR-built demo images were found" >&2
+            exit 1
+          fi
+          kind load docker-image --name chart-testing "${images[@]}"
+
+      - name: Set up helm
+        uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112 # v4.3.0
+
+      - name: Test Docker Elastic telemetry
+        timeout-minutes: 25
+        run: bash test/elastic/run_integration.sh docker
+
+      - name: Test Kubernetes Elastic telemetry with PR images
+        timeout-minutes: 30
+        run: bash test/elastic/run_integration.sh k8s

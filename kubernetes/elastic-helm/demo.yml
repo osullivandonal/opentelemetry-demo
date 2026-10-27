@@ -12,8 +12,8 @@ default:
     - name: OTEL_K8S_NAMESPACE
       valueFrom:
         fieldRef:
-         apiVersion: v1
-         fieldPath: metadata.namespace
+          apiVersion: v1
+          fieldPath: metadata.namespace
     - name: OTEL_K8S_NODE_NAME
       valueFrom:
         fieldRef:
@@ -30,11 +30,27 @@ default:
           apiVersion: v1
           fieldPath: metadata.uid
     - name: OTEL_RESOURCE_ATTRIBUTES
-      value: 'service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),k8s.pod.uid=$(OTEL_K8S_POD_UID)'
+      value: "service.name=$(OTEL_SERVICE_NAME),service.instance.id=$(OTEL_K8S_POD_UID),\
+        service.namespace=opentelemetry-demo,k8s.namespace.name=$(OTEL_K8S_NAMESPACE),\
+        k8s.node.name=$(OTEL_K8S_NODE_NAME),k8s.pod.name=$(OTEL_K8S_POD_NAME),\
+        k8s.pod.uid=$(OTEL_K8S_POD_UID)"
     - name: OTEL_COLLECTOR_NAME
       value: "opentelemetry-kube-stack-daemon-collector.opentelemetry-operator-system.svc.cluster.local"
 
 components:
+  ad:
+    resources:
+      limits:
+        memory: 512Mi
+  checkout:
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: http/protobuf
+    resources:
+      limits:
+        memory: 128Mi
   fraud-detection:
     resources:
       limits:
@@ -43,6 +59,43 @@ components:
     resources:
       limits:
         memory: 800Mi
+  payment:
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: grpc
+  product-catalog:
+    envOverrides:
+      - name: OTEL_CONFIG_FILE
+        value: /otel-config.yml
+    resources:
+      limits:
+        memory: 128Mi
+    mountedConfigMaps:
+      - name: product-catalog-otel-config
+        mountPath: /otel-config.yml
+        subPath: otel-config.yml
+        existingConfigMap: product-catalog-otel-config
+    initContainers:
+      - name: wait-for-postgresql
+        image: busybox:latest
+        command: ["sh", "-c", "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;"]
+  shipping:
+    envOverrides:
+      - name: FLAGD_HOST
+        value: flagd
+      - name: FLAGD_PORT
+        value: "8013"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: OTEL_EXPORTER_OTLP_PROTOCOL
+        value: http/protobuf
+    resources:
+      limits:
+        memory: 64Mi
+  recommendation:
+    envOverrides:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
 
   load-generator:
     envOverrides:
@@ -58,6 +111,18 @@ components:
         value: "telemetry-docs"
       - name: TELEMETRY_DOCS_PORT
         value: "8000"
+      - name: OPAMP_SERVER_HOST
+        value: opamp-server
+      - name: OPAMP_SERVER_UI_PORT
+        value: "4321"
+      - name: CHATBOT_HOST
+        value: chatbot
+      - name: CHATBOT_PORT
+        value: "7860"
+      - name: FIREPIT_HOST
+        value: firepit
+      - name: FIREPIT_PORT
+        value: "8080"
   flagd:
     sidecarContainers:
       - name: flagd-ui
@@ -80,11 +145,6 @@ components:
         volumeMounts:
           - name: config-rw
             mountPath: /app/data
-  product-catalog:
-    initContainers:
-      - name: wait-for-postgresql
-        image: busybox:latest
-        command: ["sh", "-c", "until nc -z -v -w30 postgresql 5432; do echo waiting for postgresql; sleep 2; done;"]
   llm:
     enabled: false
   product-reviews:

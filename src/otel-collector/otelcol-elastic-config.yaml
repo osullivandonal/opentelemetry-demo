@@ -246,4 +246,3 @@ service:
         - batch
       receivers:
         - otlp
-
